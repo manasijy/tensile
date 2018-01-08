@@ -50,6 +50,8 @@ text(gca,160,7000,txt1,'FontSize',14);
 text(gca,160,6000,txt2,'FontSize',14);
 text(gca,10,1800,txt3,'FontSize',14);
 text(gca,10,1200,txt4,'FontSize',14);
+%% To save the figure in tiff
+% print(h, '-dtiff', ['myfigure',name,'.tiff']);
 % savefig('C:\Users\PC#3\Documents\MATLAB\tensile\KMPlots\611_2.fig')
 %% Voce equation
 % sigma = saturation_stress(1-exp(-initial_strain_Hardening*eps_p/saturation_stress));
