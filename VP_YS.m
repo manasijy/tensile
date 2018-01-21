@@ -49,12 +49,12 @@ close;
 %%%
 %% Import data from csv files
 %% Initialize variables.
-foldername = 'C:\Users\PC#3\Desktop\nirajJan16\fwd';
-fname = 'Specimen_RawData_UDR 146C.csv';
+foldername = 'C:\Users\PC#3\Desktop\nirajJan16\StressDrop\AA2195 ST cold rolled';
+fname = 'Specimen_RawData_U90.csv';
 filename = fullfile(foldername,fname);
 saveLocation = fullfile(foldername,[extractBefore(fname,'.'),'testData.mat']);
 delimiter = ',';
-startRow = 18;%3
+startRow = 2;%3
 
 
 %% Read columns of data as text:
@@ -148,82 +148,101 @@ EnggStrain = cell2mat(raw(:, 2));%/100;
 % clearvars filename delimiter startRow formatSpec fileID dataArray ans;
 
 %%
-plot(EnggStrain,EnggStress,'-.b')
+TrueStrain = log(ones(length(EnggStrain),1)+EnggStrain);
+TrueStress = EnggStress.*(ones(length(EnggStrain),1)+EnggStrain);
+plot(TrueStrain,TrueStress,'-.b')
 
 pause
+
 
 %% Part2 - Manual
 
 %{
 % Now go to the figure and use brush tool to select the elastic deformation
 % data. It will appear in red color.Right click and save as workspace
-% variable 'elast'. This will be a numel(strain)X 2 matrix. now run the
-% following:
+% variable 'ans1'.Do the same on the plastic portion of the true
+stress-true strain curve and save as ans2.
+This will be a numel(strain)X 2 matrix. now run the following:
 %}
 
-linfit = fit(ans1(:,1),ans1(:,2),'poly1');
-slope = linfit.p1;
-hold on
-plot(linspace(0,0.1,10)+0.002, linfit.p2+linfit.p1.*linspace(0,0.1,10))
-err = EnggStress - polyval([linfit.p1,(linfit.p2-0.002*linfit.p1)],EnggStrain);
-[index] = find(abs(err)== min(abs(err)));
-yieldStress = EnggStress(index);
-hold off
+linfit1 = fit(ans1(:,1),ans1(:,2),'poly1');
+linfit2 = fit(ans2(:,1),ans2(:,2),'poly1');
 
-%%  part3 - auto
-TrueStrain = log(ones(length(EnggStrain),1)+EnggStrain);
-TrueStress = EnggStress.*(ones(length(EnggStrain),1)+EnggStrain);
-TruePlasticStrain = TrueStrain - TrueStress*(1/linfit.p1);
-maxStressIndex = find (TrueStress == max(TrueStress));
-TplStrain =TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index);
-TplStress= TrueStress(index:maxStressIndex);
-UTS = TrueStress(maxStressIndex);
-UTS_Engg = max(EnggStress);
-% h = figure;
-plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStress(index:maxStressIndex),'-r');
-% ax = plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStress(index:maxStressIndex),'-r');
-ylim([0 inf]); 
-pbaspect([1 1 1]);
-% % % save('testData.mat','yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress');
-% % clearvars ;%ax ans ans1 err h index linfit maxStressIndex TruePlasticStrain; 
+A = [1,-linfit1.p1;1,-linfit2.p1]';
+B = [linfit1.p2,linfit2.p2];
+X = B/A;
+YS = X(1);
+YS_strain = X(2);
 
 
-%% K-M plotting
 
-% Set up fittype and options.
-%Degree of polynomial used for fitting. 5 works fine. But check it though.
-degree = 6; 
-fitpolytype = ['poly',num2str(degree)];
-ft = fittype( fitpolytype );
 
-% Fit model to data.
-[fitresult, gof] = fit( TplStrain,TplStress, ft );
 
-% Plot fit with data.
-figure( 'Name', [fitpolytype,'fit']);
-h = plot( fitresult, TplStrain,TplStress );
-legend( h, 'True Stress vs. True Plastic Strain', [fitpolytype,'fit'] , 'Location', 'SouthEast' );
-% Label axes
-xlabel( 'True Plastic Strain');
-ylabel( 'True Stress'); 
-grid on
 
-KMY = differentiate(fitresult,TplStrain);
-figure( 'Name', 'd(sigma)/d(epsilon) vs sigma' );
-KMX = fitresult(TplStrain);
-h1 = plot(KMX,KMY);
-xlabel( 'True Stress - Yield Stress (MPa)' );
-ylabel( 'd(sigma)/d(epsilon)' );
-grid on
-grid minor
-
-%%
-save(saveLocation,'yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','UTS_Engg','KMX','KMY');
-
-%% To save in excel sheet
-
-A_matrix = padcat(EnggStress,EnggStrain,TrueStrain,TrueStress,TplStrain,TplStress,KMX,KMY,yieldStress,UTS,UTS_Engg);
-%  {'EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','KMX','KMY','yieldStress','UTS','UTS_Engg';A_Data};
-loc_xls = fullfile(fullfile(foldername,[extractBefore(fname,'.'),'new.xlsx']));
+% %%
+% linfit = fit(ans1(:,1),ans1(:,2),'poly1');
+% slope = linfit.p1;
+% hold on
+% plot(linspace(0,0.1,10)+0.002, linfit.p2+linfit.p1.*linspace(0,0.1,10))
+% err = EnggStress - polyval([linfit.p1,(linfit.p2-0.002*linfit.p1)],EnggStrain);
+% [index] = find(abs(err)== min(abs(err)));
+% yieldStress = EnggStress(index);
+% hold off
+% 
+% %%  part3 - auto
+% TrueStrain = log(ones(length(EnggStrain),1)+EnggStrain);
+% TrueStress = EnggStress.*(ones(length(EnggStrain),1)+EnggStrain);
+% TruePlasticStrain = TrueStrain - TrueStress*(1/linfit.p1);
+% maxStressIndex = find (TrueStress == max(TrueStress));
+% TplStrain =TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index);
+% TplStress= TrueStress(index:maxStressIndex);
+% UTS = TrueStress(maxStressIndex);
+% UTS_Engg = max(EnggStress);
+% % h = figure;
+% plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStress(index:maxStressIndex),'-r');
+% % ax = plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStress(index:maxStressIndex),'-r');
+% ylim([0 inf]); 
+% pbaspect([1 1 1]);
+% % % % save('testData.mat','yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress');
+% % % clearvars ;%ax ans ans1 err h index linfit maxStressIndex TruePlasticStrain; 
+% 
+% 
+% %% K-M plotting
+% 
+% % Set up fittype and options.
+% %Degree of polynomial used for fitting. 5 works fine. But check it though.
+% degree = 6; 
+% fitpolytype = ['poly',num2str(degree)];
+% ft = fittype( fitpolytype );
+% 
+% % Fit model to data.
+% [fitresult, gof] = fit( TplStrain,TplStress, ft );
+% 
+% % Plot fit with data.
+% figure( 'Name', [fitpolytype,'fit']);
+% h = plot( fitresult, TplStrain,TplStress );
+% legend( h, 'True Stress vs. True Plastic Strain', [fitpolytype,'fit'] , 'Location', 'SouthEast' );
+% % Label axes
+% xlabel( 'True Plastic Strain');
+% ylabel( 'True Stress'); 
+% grid on
+% 
+% KMY = differentiate(fitresult,TplStrain);
+% figure( 'Name', 'd(sigma)/d(epsilon) vs sigma' );
+% KMX = fitresult(TplStrain);
+% h1 = plot(KMX,KMY);
+% xlabel( 'True Stress - Yield Stress (MPa)' );
+% ylabel( 'd(sigma)/d(epsilon)' );
+% grid on
+% grid minor
+% 
+% %%
+% save(saveLocation,'yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','UTS_Engg','KMX','KMY');
+% 
+% %% To save in excel sheet
+% 
+% A_matrix = padcat(EnggStress,EnggStrain,TrueStrain,TrueStress,TplStrain,TplStress,KMX,KMY,yieldStress,UTS,UTS_Engg);
+% %  {'EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','KMX','KMY','yieldStress','UTS','UTS_Engg';A_Data};
+% % loc_xls = fullfile(fullfile(foldername,[extractBefore(fname,'.'),'new.xlsx']));
 % loc_xls = fullfile(foldername,[SheetName,'new.xlsx']);
-xlswrite(loc_xls,A_matrix);%:A, E, I
+% xlswrite(loc_xls,A_matrix);%:A, E, I

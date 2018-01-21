@@ -1,3 +1,4 @@
+
 %{
 This program can plot EnggStress-EnggStrain, TrueStress-TrueStrain and also
 find out yield stress and UTS on its own. This is semi-automatic as it
@@ -25,62 +26,31 @@ in the workspace. Plot it and then follow step 3 onwards.
 clear;
 close;
 %% Part1- import and plotting of data
-%%
-% Import the data from an excell file
-% SheetName = 'Sheet1';
-% % [~, ~, raw] = xlsread('C:\Users\PC#3\Desktop\ParentData.xlsx',SheetName,'D3:E3433');
-% [~, ~, raw] = xlsread('C:\Users\PC#3\Desktop\Niraj Work\AA2198 EPA @RT\AA2198 EPA @RT\AA2198 EPA@RT - 45 degree.xls','A2:B7464');
-% foldername = 'C:\Users\PC#3\Desktop\Niraj Work\AA2198 EPA @RT\AA2198 EPA @RT';
-% fname = fullfile(foldername,SheetName);
-% saveLocation = fullfile(foldername,[SheetName,'testData.mat']);
-% 
-% %% Create output variable
-% data = reshape([raw{:}],size(raw));
-% 
-% %% Allocate imported array to column variable names
-% EnggStrain = data(:,1);%/100;
-% EnggStress = data(:,2);
-% 
-% %% Clear temporary variables
-% clearvars data raw;
 
-%%
-%%%
-%% Import data from csv files
 %% Initialize variables.
-foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\Niraj Work\forpaperoncrossrolledaa2195sheet\AA2195 ST cold rolled\AA2195 ST cold rolled';
-fname = 'Specimen_RawData_T0.csv';
+foldername = 'C:\Users\Manasij Yadava\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\Cryo test\cryo results FSP';
+fname = 'Specimen_RawData_612@77K.csv';
 filename = fullfile(foldername,fname);
 saveLocation = fullfile(foldername,[extractBefore(fname,'.'),'testData.mat']);
 delimiter = ',';
-startRow = 3;%3
+startRow = 3;
 
-%%
-
-
-
-
-
-%%
 %% Format for each line of text:
 %   column4: double (%f)
 %	column5: double (%f)
 % For more information, see the TEXTSCAN documentation.
 formatSpec = '%*s%*s%*s%f%f%[^\n\r]';
-% formatSpec = '%*q%*q%*q%f%f%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%[^\n\r]';
+
 %% Open the text file.
 fileID = fopen(filename,'r');
 dataArray = textscan(fileID, formatSpec, 'Delimiter', delimiter, 'TextType', 'string', 'HeaderLines' ,startRow-1, 'ReturnOnError', false, 'EndOfLine', '\r\n');
 
 %% Close the text file.
 fclose(fileID);
-% Create output variable
-% for isro data
+%% Create output variable
 TestData = table(dataArray{1:end-1}, 'VariableNames', {'Tensilestrain','Tensilestress'});
-% for iitk data
-% TestData = table(dataArray{1:end-1}, 'VariableNames', {'Tensilestress','Tensilestrain'});
 EnggStress = TestData.Tensilestress;
-EnggStrain = (TestData.Tensilestrain);%/100; % Check if strain is in percentage
+EnggStrain = (TestData.Tensilestrain)/100; % Check if strain is in percentage
 %% Clear temporary variables
 clearvars filename delimiter startRow formatSpec fileID dataArray ans;
 plot(EnggStrain,EnggStress,'-.b')
@@ -119,45 +89,104 @@ plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStre
 % ax = plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStress(index:maxStressIndex),'-r');
 ylim([0 inf]); 
 pbaspect([1 1 1]);
-% % % save('testData.mat','yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress');
-% % clearvars ;%ax ans ans1 err h index linfit maxStressIndex TruePlasticStrain; 
+
+%% There are three different methods to select and differentiate tensile data
+% One - no change
+% Two - Select peaks or valleys: good for data with serrations
+% Three - select npoints to be fitted with straight line
+% Four - Select nsample data points randomly and use them to fit a moving
+% linear fit 
+
+%% One - no change
+
+TStress = TplStress;
+TStrain = TplStrain;
+
+%% Two - Select peaks or valleys: good for data with serrations
 
 
-%% K-M plotting
+% [Value_peaks,locs_peaks,~,prominance_peaks] = findpeaks(TplStress);
+% [Value_valleys,locs_valleys,~,prominance_valleys] = findpeaks(-TplStress);
+% TStress = TplStress(locs_peaks);
+% TStrain = TplStrain(locs_peaks);
+% % TStress = TplStress(locs_valleys);
+% % TStrain = TplStrain(locs_valleys);
 
-% Set up fittype and options.
-%Degree of polynomial used for fitting. 5 works fine. But check it though.
-degree = 6; 
-fitpolytype = ['poly',num2str(degree)];
-ft = fittype( fitpolytype );
+%% Three - Select nsample data points randomly and use them to fit a moving
+% linear fit 
+% [y, idx] = datasample(TplStrain,100);
+% idxx = sort(idx,'ascend');
+% % we can plot to check if the sample is good
+% plot(TplStrain(idxx),TplStress(idxx))
+% trueStrain = TplStrain(idxx);
+% trueStress = TplStress(idxx);
+% npoints =  5;
 
-% Fit model to data.
-[fitresult, gof] = fit( TplStrain,TplStress, ft );
 
-% Plot fit with data.
-figure( 'Name', [fitpolytype,'fit']);
-h = plot( fitresult, TplStrain,TplStress );
-legend( h, 'True Stress vs. True Plastic Strain', [fitpolytype,'fit'] , 'Location', 'SouthEast' );
-% Label axes
-xlabel( 'True Plastic Strain');
-ylabel( 'True Stress'); 
-grid on
+%% Four - select npoints to be fitted with straight line
 
-KMY = differentiate(fitresult,TplStrain);
-figure( 'Name', 'd(sigma)/d(epsilon) vs sigma' );
-KMX = fitresult(TplStrain);
-h1 = plot(KMX,KMY);
-xlabel( 'True Stress - Yield Stress (MPa)' );
-ylabel( 'd(sigma)/d(epsilon)' );
-grid on
-grid minor
+npoints = 50; %Number of points to be taken for fitting a straight line
+[trueStrain, trueStress] = prepareCurveData(TStrain,TStress);
+l =  length(trueStrain);
+% k=l-4;           % It limits the data to points which have altlest four points beyond it.  
+k=l-npoints+1;
+
+
+%% Initialization
+
+m=zeros(1,k);
+c=zeros(1,k);
+Rsq=zeros(1,k);
+sigma = zeros(1,k);
+epsilon = zeros(1,k);
+j=1;
+
+%% 'For' loop for finding out slope at each point
+for i=1:1:k
+    
+    stress1 = trueStress(i:(i+npoints-1));% Temporary array holds the npoints where line is fit
+    strain1 = trueStrain(i:(i+npoints-1));
+    
+    [xData, yData] = prepareCurveData( strain1, stress1 ); % Input function for fitting program
+
+    %% Polynomial (degree 1) fitting function
+    
+    ft = fittype( 'poly1' );
+    opts = fitoptions( ft );
+
+    opts.Lower = [-Inf -Inf];
+    opts.Upper = [Inf Inf];
+    
+    [f, gof] = fit( xData, yData, ft, opts );
+    
+%% Assignments of values obtained from the fitting curve
+
+    coeffvals = coeffvalues(f);
+    m(j) = coeffvals(1);
+    c(j)= coeffvals(2);
+    Rsq(j)= gof.rsquare;
+    sigma(j)= trueStress(i);
+    epsilon(j)= trueStrain(i);
+    j=j+1;
+end
 
 %%
-save(saveLocation,'yieldStress','UTS','linfit','EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','UTS_Engg','KMX','KMY');
 
-%% To save in excel sheet
+KMY = m;
+KMX = sigma;
 
-A_matrix = padcat(EnggStress,EnggStrain,TrueStrain,TrueStress,TplStrain,TplStress,KMX,KMY,yieldStress,UTS,UTS_Engg);
-%  {'EnggStress','EnggStrain','TrueStrain','TrueStress','TplStrain','TplStress','KMX','KMY','yieldStress','UTS','UTS_Engg';A_Data};
-loc_xls = fullfile(fullfile(foldername,[extractBefore(fname,'.'),'new.xlsx']));
-xlswrite(loc_xls,A_matrix);%:A, E, I
+%% PLotting KM plot and analysis
+figure( 'Name', 'd\sigma/d\epsilon vs  \sigma-\sigma_{y}' );
+h1 = plot(KMX-KMX(1),KMY);
+xlabel( '\sigma-\sigma_{y} (MPa)' );
+ylabel( 'd\sigma/d\epsilon' );
+grid on
+grid minor
+% pause
+% [linfitKM, gofKM] = fit(ans2(:,1),ans2(:,2),'poly1');
+% h2=plot( linfitKM, (KMX-KMX(1)),KMY,'-.k');
+% legend( h2, 'd\sigma/d\epsilon vs \sigma-\sigma_{y}', 'linear fit' ,...
+%     'Location', 'NorthEast','FontSize',14 );
+% k = [linfitKM.p1,linfitKM.p2];
+% % k1 = linfitKM.p1;
+% k2 = linfitKM.p1;

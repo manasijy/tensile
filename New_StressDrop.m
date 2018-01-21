@@ -1,7 +1,9 @@
+clear;
 
-foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\Serrations Work\Analysis of Data\AA2198-UA\AA2198-UA';
+
+foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\Parent2198Data';
 % foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\611P\1.is_metal_RawData';
-fname = 'Specimen_RawData_5 (1)testData.mat';
+fname = 'PA298_2L1testData.mat';
 % fname = 'testData.mat';
 filename = fullfile(foldername,fname);
 load(filename,'TplStrain','TplStress');
@@ -16,7 +18,7 @@ if locs_peaks(1)< locs_valleys(1)
     StressDrop = Value_peaks(1:data_length) - abs(Value_valleys(1:data_length));
     loc_Drops = locs_peaks(1:data_length);
 else
-    StressDrop = Value_peaks(1:data_length-1) - abs(Value_valleys(2:data_length-1));
+    StressDrop = Value_peaks(1:data_length-1) - abs(Value_valleys(2:data_length));
     loc_Drops = locs_peaks(1:data_length-1);
 end
 
@@ -56,4 +58,4 @@ savefig(fullfile(foldername,[extractBefore(fname,'.'),'serrartion.fig']));
 
 clearvars data_length filename foldername fname loc_Drops loc_Drops_significant...
     Loc_significant locs_peaks locs_valleys prominance_peaks prominance_valleys strainData StressDrop ...
-    StressDrop_significant Value_peaks Value_valleys 
+    Value_peaks Value_valleys 
