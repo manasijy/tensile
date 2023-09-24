@@ -25,15 +25,17 @@ in the workspace. Plot it and then follow step 3 onwards.
 
 clear;
 close;
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Part1- import and plotting of data
+% This part is specifically written for data in csv files
 
 %% Initialize variables.
-foldername = 'C:\Users\Manasij Yadava\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\Cryo test\cryo results FSP';
-fname = 'Specimen_RawData_612@77K.csv';
+foldername = 'C:\Users\Path\folderX'; % fill in the correct path
+fname = 'filename.csv'; % change the filename
 filename = fullfile(foldername,fname);
 saveLocation = fullfile(foldername,[extractBefore(fname,'.'),'testData.mat']);
 delimiter = ',';
-startRow = 3;
+startRow = 3; % verify the start row from your csv file
 
 %% Format for each line of text:
 %   column4: double (%f)
@@ -53,11 +55,18 @@ EnggStress = TestData.Tensilestress;
 EnggStrain = (TestData.Tensilestrain)/100; % Check if strain is in percentage
 %% Clear temporary variables
 clearvars filename delimiter startRow formatSpec fileID dataArray ans;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Alternatively the EnggStrain and EnggStress variatbles can be stored in the 
+% matlab workspace and the above steps can be skipped
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 plot(EnggStrain,EnggStress,'-.b')
 
 pause
-
-%% Part2 - Manual
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part2 - Manual: fitting the elastic portion and determining 0.2% offset 
+% yield stress
 
 %{
 % Now go to the figure and use brush tool to select the elastic deformation
@@ -74,8 +83,12 @@ err = EnggStress - polyval([linfit.p1,(linfit.p2-0.002*linfit.p1)],EnggStrain);
 [index] = find(abs(err)== min(abs(err)));
 yieldStress = EnggStress(index);
 hold off
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%  part3 - auto: To get true strain-true stress and true plastic strain (TplStrain) - true
+% stress (TplStress) data. TplStrain and TplStress data is required for strain hardening 
+% analysis
 
-%%  part3 - auto
 TrueStrain = log(ones(length(EnggStrain),1)+EnggStrain);
 TrueStress = EnggStress.*(ones(length(EnggStrain),1)+EnggStrain);
 TruePlasticStrain = TrueStrain - TrueStress*(1/linfit.p1);
@@ -90,21 +103,22 @@ plot((TruePlasticStrain(index:maxStressIndex)-TruePlasticStrain(index)),TrueStre
 ylim([0 inf]); 
 pbaspect([1 1 1]);
 
-%% There are three different methods to select and differentiate tensile data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Part 4: Differentiating the TplStrain-TplStress data
+% There are three different methods to select and differentiate tensile data
 % One - no change
 % Two - Select peaks or valleys: good for data with serrations
 % Three - select npoints to be fitted with straight line
 % Four - Select nsample data points randomly and use them to fit a moving
 % linear fit 
 
-%% One - no change
+%% One - no change: Most common
 
 TStress = TplStress;
 TStrain = TplStrain;
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Two - Select peaks or valleys: good for data with serrations
-
-
 % [Value_peaks,locs_peaks,~,prominance_peaks] = findpeaks(TplStress);
 % [Value_valleys,locs_valleys,~,prominance_valleys] = findpeaks(-TplStress);
 % TStress = TplStress(locs_peaks);
@@ -112,6 +126,7 @@ TStrain = TplStrain;
 % % TStress = TplStress(locs_valleys);
 % % TStrain = TplStrain(locs_valleys);
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Three - Select nsample data points randomly and use them to fit a moving
 % linear fit 
 % [y, idx] = datasample(TplStrain,100);
@@ -122,15 +137,13 @@ TStrain = TplStrain;
 % trueStress = TplStress(idxx);
 % npoints =  5;
 
-
-%% Four - select npoints to be fitted with straight line
-
-npoints = 50; %Number of points to be taken for fitting a straight line
-[trueStrain, trueStress] = prepareCurveData(TStrain,TStress);
-l =  length(trueStrain);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Four - select npoints to be fitted with straight line.
+% npoints = 50; %Number of points to be taken for fitting a straight line
+% [trueStrain, trueStress] = prepareCurveData(TStrain,TStress);
+% l =  length(trueStrain);
 % k=l-4;           % It limits the data to points which have altlest four points beyond it.  
-k=l-npoints+1;
-
+% k=l-npoints+1;
 
 %% Initialization
 
