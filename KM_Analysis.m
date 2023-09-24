@@ -1,3 +1,11 @@
+%% This code can be used to fit a straight line over the strain hardening vs. 
+% (sigma-sigma0) curve. For this first create the the required data for the 
+% KM curve i.e. (d_sigma/d_epsilon_p) vs. (sigma-sigma0) using tensiletestAnalysis2 
+% script in current repo. This code requires input from the user to select the
+% the correct straight line portion of the KM curve which needs to be fitted with
+% the straight line. The intercept of the straight line on ordinate and the abscissa
+% gives important paramters for the dislocation storage and dynamic recovery paramters
+% of the materisl.
 
 %% PLotting KM plot and analysis
 figure( 'Name', 'd\sigma/d\epsilon vs  \sigma-\sigma_{y}' );
@@ -52,7 +60,7 @@ text(gca,10,1800,txt3,'FontSize',14);
 text(gca,10,1200,txt4,'FontSize',14);
 %% To save the figure in tiff
 % print(h, '-dtiff', ['myfigure',name,'.tiff']);
-% savefig('C:\Users\PC#3\Documents\MATLAB\tensile\KMPlots\611_2.fig')
+% savefig('PATH\filename.fig')
 %% Voce equation
 % sigma = saturation_stress(1-exp(-initial_strain_Hardening*eps_p/saturation_stress));
 %% forest evolution
