@@ -1,10 +1,16 @@
+%% This script is used to calculate the stress drops observed in 
+% tensile stress-strain curves due to dynamic strain aging.
+% Befor using this script first analyse your stress-strain curve
+% using tensileDataAnalysis program because this script takes true
+% stress-true plastic strain data as input. Below it was assumed that 
+% this data is saved in the testData.mat file. If user has saved this 
+% input data in excel or text, he can import the two arrays: true stress and 
+% true plastic strain into the workspace and run the script from the section
+% 'Stress drop calculation'
+
 clear;
-
-
-foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\Parent2198Data';
-% foldername = 'C:\Users\PC#3\Desktop\MKY_IITK\ISRO Project\ISRO_FSP_Project_Data\Tensile Test Data\611P\1.is_metal_RawData';
-fname = 'PA298_2L1testData.mat';
-% fname = 'testData.mat';
+foldername = 'FolderPath';
+fname = 'testData.mat';
 filename = fullfile(foldername,fname);
 load(filename,'TplStrain','TplStress');
 
