@@ -1,11 +1,13 @@
 %% This code can be used to fit a straight line over the strain hardening vs. 
 % (sigma-sigma0) curve. For this first create the the required data for the 
-% KM curve i.e. (d_sigma/d_epsilon_p) vs. (sigma-sigma0) using tensiletestAnalysis2 
+% KM curve i.e. (d_sigma/d_epsilon_p) vs. (sigma-sigma0) using tensiletesAnalysis2 
 % script in current repo. This code requires input from the user to select the
 % the correct straight line portion of the KM curve which needs to be fitted with
 % the straight line. The intercept of the straight line on ordinate and the abscissa
 % gives important paramters for the dislocation storage and dynamic recovery paramters
 % of the materisl.
+% This script uses burgers vector-b and shear modulus -G value, at present it has
+% used these values for Aluminum. One need to change it for a different material.
 
 %% PLotting KM plot and analysis
 figure( 'Name', 'd\sigma/d\epsilon vs  \sigma-\sigma_{y}' );
