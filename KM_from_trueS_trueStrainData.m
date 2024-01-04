@@ -1,3 +1,7 @@
+%% This script is used to create Kocks-Mecking plots from true stress
+% and true plastic strain data. To run it one must first store these two variables 
+% in the workspace as True_Pl_Strain,True_Pl_Stress variables. (One can change these names)
+% 
 
 [trueStrain, trueStress] = prepareCurveData(True_Pl_Strain,True_Pl_Stress);
 clear True_Pl_Strain True_Pl_Stress
