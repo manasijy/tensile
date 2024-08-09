@@ -8,18 +8,17 @@ clear True_Pl_Strain True_Pl_Stress
 %% K-M plotting
 
 % Set up fittype and options.
-%Degree of polynomial used for fitting. 5 works fine. But check it though.
-degree = 5; 
-fitpolytype = ['poly',num2str(degree)];
-ft = fittype( fitpolytype );
-
+% fitmodel = {'x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+% fitmodel = {'x^7','x^6','x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+fitmodel = {'x^9','x^8','x^7','x^6','x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+ft = fittype( fitmodel );
 % Fit model to data.
-[fitresult, gof] = fit( trueStrain,trueStress, ft );
+[fitresult, gof] = fit( TplStrain,TplStress, ft );
 
 % Plot fit with data.
-figure( 'Name', [fitpolytype,'fit']);
+figure( 'Name', [fitmodel,'fit']);
 h = plot( fitresult, trueStrain, trueStress );
-legend( h, 'True Stress vs. True Plastic Strain', [fitpolytype,'fit'] , 'Location', 'SouthEast' );
+legend( h, 'True Stress vs. True Plastic Strain', [fitmodel,'fit'] , 'Location', 'SouthEast' );
 % Label axes
 xlabel( 'True Plastic Strain');
 ylabel( 'True Stress'); 
