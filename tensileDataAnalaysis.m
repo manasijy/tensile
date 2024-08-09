@@ -78,18 +78,20 @@ pbaspect([1 1 1]);
 %% K-M plotting
 
 % Set up fittype and options.
-%Degree of polynomial used for fitting. 5 works fine. But check it though.
-degree = 6; 
-fitpolytype = ['poly',num2str(degree)];
-ft = fittype( fitpolytype );
+%Degree of polynomial used for fitting. 5 works fine. But check it though. One needs to verify
+%the fit, particularly at the elastoplastic region to get good KM curve
 
+% fitmodel = {'x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+% fitmodel = {'x^7','x^6','x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+fitmodel = {'x^9','x^8','x^7','x^6','x^5','x^4','x^3','x^2','x','sqrt(0.001+x)','1'};
+ft = fittype( fitmodel );
 % Fit model to data.
 [fitresult, gof] = fit( TplStrain,TplStress, ft );
 
 % Plot fit with data.
-figure( 'Name', [fitpolytype,'fit']);
+figure( 'Name', [fitmodel,'fit']);
 h = plot( fitresult, TplStrain,TplStress );
-legend( h, 'True Stress vs. True Plastic Strain', [fitpolytype,'fit'] , 'Location', 'SouthEast' );
+legend( h, 'True Stress vs. True Plastic Strain', [fitmodel,'fit'] , 'Location', 'SouthEast' );
 % Label axes
 xlabel( 'True Plastic Strain');
 ylabel( 'True Stress'); 
